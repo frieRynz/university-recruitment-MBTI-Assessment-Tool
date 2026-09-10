@@ -43,5 +43,21 @@ services:
     ports:
       - "3000:3000"
 
+  # Web-based PostgreSQL GUI — http://localhost:5050
+  # Login: admin@mbti.local / admin_secret (then register the db server:
+  #   host "db", port 5432, user "mbti", password "mbti_secret", database "mbti_db")
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mbti.com
+      PGADMIN_DEFAULT_PASSWORD: admin_secret
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+    ports:
+      - "5050:80"
+
 volumes:
   pgdata:
