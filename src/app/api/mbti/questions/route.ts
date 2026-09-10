@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/auth/rbac";
 // 4.1 Question bank — any authenticated principal may fetch (all roles can view learning content).
 export async function GET() {
   try {
-    await requireRole("CANDIDATE", "FACULTY_STAFF", "HR_EXECUTIVE", "HIRING_MANAGER");
+    await requireRole("EMPLOYEE", "HR");
   } catch {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }

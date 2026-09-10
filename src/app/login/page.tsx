@@ -4,10 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 
 const HOME_BY_ROLE: Record<string, string> = {
-  HR_EXECUTIVE: "/hr",
-  HIRING_MANAGER: "/manager",
-  FACULTY_STAFF: "/employee",
-  CANDIDATE: "/candidate",
+  HR: "/hr",
+  EMPLOYEE: "/employee",
 };
 
 export default function LoginPage() {
@@ -57,10 +55,8 @@ export default function LoginPage() {
       </form>
       <div className="mt-6 rounded-lg border bg-white p-4 text-xs text-slate-500">
         <p className="mb-1 font-semibold">Demo accounts (password: Password123!)</p>
-        <p>HR Executive — hr.exec@university.edu</p>
-        <p>Hiring Manager — manager.ict@university.edu</p>
-        <p>Faculty/Staff — staff.sci@university.edu</p>
-        <p>Candidate — david.ong@example.com</p>
+        <p>HR — hr.exec@university.edu</p>
+        <p>Employee — staff.sci@university.edu</p>
       </div>
     </main>
   );

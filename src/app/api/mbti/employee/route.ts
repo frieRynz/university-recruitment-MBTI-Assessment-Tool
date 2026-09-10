@@ -3,7 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireRole, withAuth } from "@/lib/auth/rbac";
 import { scoreMbti } from "@/lib/mbti/scoring";
-import type { Dichotomy } from "@/lib/mbti/questions";
 
 const answerSchema = z.object({
   E_I: z.array(z.number().min(-3).max(3)).length(3),
@@ -12,15 +11,15 @@ const answerSchema = z.object({
   J_P: z.array(z.number().min(-3).max(3)).length(3),
 });
 
-// 4.2 Employee self-development test submission (independent of recruitment).
-// RBAC: use-case table — only Candidate/Employee take the test. Employees here = FACULTY_STAFF.
+// Employee self-development test submission (0..many attempts).
+// RBAC: any authenticated employee may take the test (HR included).
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = answerSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid answers" }, { status: 400 });
 
   return withAuth(async (session) => {
-    await requireRole("FACULTY_STAFF");
+    await requireRole("EMPLOYEE", "HR");
     const s = scoreMbti(parsed.data);
     const result = await prisma.employeeMBTIResult.create({
       data: {
@@ -41,10 +40,10 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// 6.1/6.2 Individual dashboard + historical results (own only)
+// Own historical results (own only)
 export async function GET() {
   return withAuth(async (session) => {
-    await requireRole("FACULTY_STAFF");
+    await requireRole("EMPLOYEE", "HR");
     const results = await prisma.employeeMBTIResult.findMany({
       where: { employeeId: session.id },
       orderBy: { timestamp: "desc" },

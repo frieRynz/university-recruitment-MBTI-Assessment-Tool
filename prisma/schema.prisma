@@ -10,34 +10,8 @@ datasource db {
 // ---------- Enums ----------
 
 enum Role {
-  FACULTY_STAFF
-  HR_EXECUTIVE
-  HIRING_MANAGER
-}
-
-enum Level {
-  DEPARTMENT_HEAD
-  DEAN
-  VICE_PROVOST
-  PROGRAM_DIRECTOR
-}
-
-enum PositionStatus {
-  OPEN
-  CLOSED
-}
-
-enum Source {
-  INTERNAL
-  EXTERNAL
-}
-
-enum DecisionStatus {
-  SHORTLISTED
-  INTERVIEWING
-  OFFERED
-  HIRED
-  REJECTED
+  EMPLOYEE
+  HR
 }
 
 enum SocialScore {
@@ -62,26 +36,22 @@ enum LifestyleScore {
 
 // ---------- Models ----------
 
-/// Existing faculty/staff. Can self-test for development, or (HR_EXECUTIVE / HIRING_MANAGER) manage recruitment.
+/// Internal employee. Can register, log in, take the MBTI test and review past results.
 model Employee {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  dob          DateTime
-  gender       String
-  email        String               @unique
-  dept         String
-  role         Role                 @default(FACULTY_STAFF)
-  password     String
-  createdAt    DateTime             @default(now())
+  id        Int      @id @default(autoincrement())
+  name      String
+  dob       DateTime
+  gender    String
+  email     String   @unique
+  dept      String
+  role      Role     @default(EMPLOYEE)
+  password  String
+  createdAt DateTime @default(now())
 
-  mbtiResults  EmployeeMBTIResult[]
-  positions    Position[]           @relation("PositionPostedBy")
-  decisions    RecruitmentDecision[]
-  linkedCandidate Candidate?        @relation("EmployeeCandidate")
-  assignmentsMade TestAssignment[]  @relation("AssignmentBy")
+  mbtiResults EmployeeMBTIResult[]
 }
 
-/// Self-development test results, independent of any recruitment cycle.
+/// Free-standing self-development test results (0..many per employee).
 model EmployeeMBTIResult {
   id                  Int            @id @default(autoincrement())
   employeeId          Int
@@ -99,100 +69,4 @@ model EmployeeMBTIResult {
   lifestyleClarity    Float
 
   @@index([employeeId, timestamp])
-}
-
-/// A recruitment opening for a leadership role.
-model Position {
-  id          Int             @id @default(autoincrement())
-  title       String
-  department  String
-  level       Level
-  status      PositionStatus  @default(OPEN)
-  postedById  Int
-  postedBy    Employee        @relation("PositionPostedBy", fields: [postedById], references: [id])
-  createdAt   DateTime        @default(now())
-
-  candidateResults CandidateMBTIResult[]
-  decisions        RecruitmentDecision[]
-  assignments      TestAssignment[]
-}
-
-enum AssignmentStatus {
-  PENDING
-  COMPLETED
-}
-
-/// HR assigns a Candidate to take the test for a specific Position.
-model TestAssignment {
-  id            Int              @id @default(autoincrement())
-  candidateId   Int
-  candidate     Candidate        @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  positionId    Int
-  position      Position         @relation(fields: [positionId], references: [id])
-  status        AssignmentStatus @default(PENDING)
-  assignedById  Int
-  assignedBy    Employee         @relation("AssignmentBy", fields: [assignedById], references: [id])
-  createdAt     DateTime         @default(now())
-
-  @@unique([candidateId, positionId])
-}
-
-/// A person being assessed for a Position. May link to an existing Employee (internal) or be external.
-model Candidate {
-  id                Int      @id @default(autoincrement())
-  name              String
-  dob               DateTime
-  gender            String
-  email             String   @unique
-  source            Source   @default(EXTERNAL)
-  linkedEmployeeId  Int? @unique
-  linkedEmployee    Employee? @relation("EmployeeCandidate", fields: [linkedEmployeeId], references: [id])
-  password          String
-  createdAt         DateTime @default(now())
-
-  mbtiResults CandidateMBTIResult[]
-  decisions   RecruitmentDecision[]
-  assignments TestAssignment[]
-}
-
-/// Test result scoped to a specific Candidate + Position pairing (not free-standing).
-model CandidateMBTIResult {
-  id                   Int            @id @default(autoincrement())
-  candidateId          Int
-  candidate            Candidate      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  positionId           Int
-  position             Position       @relation(fields: [positionId], references: [id])
-  timestamp            DateTime       @default(now())
-  socialRatingScore    SocialScore
-  visionRatingScore    VisionScore
-  decisionRatingScore  DecisionScore
-  lifestyleRatingScore LifestyleScore
-  mbtiResult           String
-  decisionStyle        String
-  socialClarity        Float
-  visionClarity        Float
-  decisionClarity      Float
-  lifestyleClarity     Float
-
-  decision RecruitmentDecision?
-
-  @@index([positionId])
-}
-
-/// Links a candidate's result on a position to an HR/hiring decision. One per candidate/position pairing.
-model RecruitmentDecision {
-  id            Int            @id @default(autoincrement())
-  candidateId   Int
-  candidate     Candidate      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  positionId    Int
-  position      Position       @relation(fields: [positionId], references: [id])
-  mbtiResultId  Int            @unique
-  mbtiResult    CandidateMBTIResult @relation(fields: [mbtiResultId], references: [id])
-  status        DecisionStatus
-  decidedById   Int
-  decidedBy     Employee       @relation(fields: [decidedById], references: [id])
-  decisionDate  DateTime       @default(now())
-  notes         String?
-
-  @@unique([candidateId, positionId])
 }

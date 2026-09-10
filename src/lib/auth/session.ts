@@ -1,16 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-export type PrincipalRole = "CANDIDATE" | "FACULTY_STAFF" | "HR_EXECUTIVE" | "HIRING_MANAGER";
+export type PrincipalRole = "EMPLOYEE" | "HR";
 
 export interface SessionPayload {
-  // Employee or Candidate table id
   id: number;
   email: string;
   name: string;
   role: PrincipalRole;
-  // "EMPLOYEE" or "CANDIDATE" — which table this principal belongs to
-  principalType: "EMPLOYEE" | "CANDIDATE";
 }
 
 const COOKIE_NAME = "mbti_session";
@@ -52,7 +49,6 @@ export async function getSession(): Promise<SessionPayload | null> {
       email: payload.email as string,
       name: payload.name as string,
       role: payload.role as PrincipalRole,
-      principalType: payload.principalType as "EMPLOYEE" | "CANDIDATE",
     };
   } catch {
     return null;

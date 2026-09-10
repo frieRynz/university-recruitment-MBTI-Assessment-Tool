@@ -6,8 +6,7 @@ export interface SessionInfo {
   id: number;
   name: string;
   email: string;
-  role: "CANDIDATE" | "FACULTY_STAFF" | "HR_EXECUTIVE" | "HIRING_MANAGER";
-  principalType: "EMPLOYEE" | "CANDIDATE";
+  role: "EMPLOYEE" | "HR";
 }
 
 export function useSession() {

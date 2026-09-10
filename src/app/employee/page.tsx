@@ -11,14 +11,14 @@ interface ResultRow {
   socialClarity: number; visionClarity: number; decisionClarity: number; lifestyleClarity: number;
 }
 
-// Flow 3: Employee self-development — take test, view own result + history. No recruitment data.
+// Flow: Internal Employee — take test, view own result + history. No recruitment data.
 export default function EmployeePage() {
   const { session, loading } = useSession();
   const [results, setResults] = useState<ResultRow[]>([]);
   const [showTest, setShowTest] = useState(false);
 
   const load = useCallback(() => {
-    if (session?.role === "FACULTY_STAFF") {
+    if (session?.role === "EMPLOYEE") {
       api("/api/mbti/employee").then((d) => setResults(d.results)).catch(() => {});
     }
   }, [session]);
@@ -26,7 +26,7 @@ export default function EmployeePage() {
   useEffect(load, [load]);
 
   if (loading) return <main className="p-8">Loading...</main>;
-  if (!session || session.role !== "FACULTY_STAFF") {
+  if (!session || session.role !== "EMPLOYEE") {
     return <main className="p-8">Access denied. <Link href="/login" className="text-indigo-600">Login</Link></main>;
   }
 
